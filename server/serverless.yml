@@ -1,0 +1,58 @@
+service: finance-tracker-backend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+
+plugins:
+  - serverless-appsync-plugin
+
+custom:
+  appSync:
+    name: finance-tracker-api
+    authenticationType: AMAZON_COGNITO_USER_POOLS
+    userPoolConfig:
+      awsRegion: ${self:provider.region}
+      defaultAction: ALLOW
+      userPoolId: !Ref CognitoUserPool
+    schema: schema.graphql
+    mappingTemplatesLocation: mapping-templates
+    mappingTemplates:
+      - dataSource: TransactionsTable
+        type: Query
+        field: getTransactions
+        request: get-transactions-request.vtl
+        response: get-transactions-response.vtl
+    dataSources:
+      - type: AMAZON_DYNAMODB
+        name: TransactionsTable
+        description: "DynamoDB table for transactions"
+        config:
+          tableName: !Ref TransactionsTable
+
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: FinanceTrackerUserPool
+        AutoVerifiedAttributes: [email]
+
+    TransactionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TransactionsTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+
