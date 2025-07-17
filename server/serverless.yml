@@ -1,6 +1,6 @@
 service: finance-tracker-backend
 
-frameworkVersion: '4'
+frameworkVersion: '3'
 
 provider:
   name: aws
