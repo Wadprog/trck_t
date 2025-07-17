@@ -7,9 +7,11 @@ provider:
   runtime: nodejs18.x
   region: us-east-1
   stage: ${opt:stage, 'dev'}
-  # environment:
-    # COGNITO_USER_POOL_ID: 
-    #   Ref: CognitoUserPool
+  environment:
+    COGNITO_USER_POOL_ID: 
+      Ref: CognitoUserPool
+    COGNITO_USER_POOL_CLIENT_ID:
+      Ref: CognitoUserPoolClient
 
 # plugins:
 #   - serverless-appsync-plugin
@@ -23,20 +25,62 @@ provider:
 
 resources:
   Resources:
+    # Cognito User Pool
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: finance-tracker-users-${self:provider.stage}
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Required: true
+            Mutable: true
+          - Name: name
+            AttributeDataType: String
+            Required: true
+            Mutable: true
+
+    # Cognito User Pool Client
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        UserPoolId: !Ref CognitoUserPool
+        ClientName: finance-tracker-client-${self:provider.stage}
+        GenerateSecret: false
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        PreventUserExistenceErrors: ENABLED
+        RefreshTokenValidity: 30
+        AccessTokenValidity: 60
+        IdTokenValidity: 60
+        TokenValidityUnits:
+          RefreshToken: days
+          AccessToken: minutes
+          IdToken: minutes
+
     # AppSync GraphQL API
     AppSyncApi:
       Type: AWS::AppSync::GraphQLApi
       Properties:
         Name: finance-tracker-api-${self:provider.stage}
-        AuthenticationType: API_KEY
-        
-    # API Key for AppSync
-    AppSyncApiKey:
-      Type: AWS::AppSync::ApiKey
-      Properties:
-        ApiId: !GetAtt AppSyncApi.ApiId
-        Description: "API Key for Finance Tracker"
-        Expires: 1767225600  # 1 year from now (max allowed)
+        AuthenticationType: AMAZON_COGNITO_USER_POOLS
+        UserPoolConfig:
+          UserPoolId: !Ref CognitoUserPool
+          AwsRegion: ${self:provider.region}
+          DefaultAction: ALLOW
         
     # GraphQL Schema
     AppSyncSchema:
@@ -109,6 +153,10 @@ resources:
       Description: "AppSync GraphQL API ID"
       Value: !Ref AppSyncApi
       
-    GraphQLApiKey:
-      Description: "AppSync API Key"
-      Value: !GetAtt AppSyncApiKey.ApiKey
+    CognitoUserPoolId:
+      Description: "Cognito User Pool ID"
+      Value: !Ref CognitoUserPool
+      
+    CognitoUserPoolClientId:
+      Description: "Cognito User Pool Client ID"
+      Value: !Ref CognitoUserPoolClient
