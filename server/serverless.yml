@@ -7,9 +7,9 @@ provider:
   runtime: nodejs18.x
   region: us-east-1
   stage: ${opt:stage, 'dev'}
-  environment:
-    COGNITO_USER_POOL_ID: 
-      Ref: CognitoUserPool
+  # environment:
+    # COGNITO_USER_POOL_ID: 
+    #   Ref: CognitoUserPool
 
 plugins:
   - serverless-appsync-plugin
@@ -17,12 +17,7 @@ plugins:
 custom:
   appSync:
     name: finance-tracker-api
-    authenticationType: AMAZON_COGNITO_USER_POOLS
-    userPoolConfig:
-      awsRegion: ${self:provider.region}
-      defaultAction: ALLOW
-      userPoolId: 
-        Ref: CognitoUserPool
+    authenticationType: API_KEY
     schema: schema.graphql
     mappingTemplatesLocation: mapping-templates
     mappingTemplates:
