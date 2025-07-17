@@ -7,36 +7,87 @@ provider:
   runtime: nodejs18.x
   region: us-east-1
   stage: ${opt:stage, 'dev'}
+  # environment:
+    # COGNITO_USER_POOL_ID: 
+    #   Ref: CognitoUserPool
 
-plugins:
-  - serverless-appsync-plugin
+# plugins:
+#   - serverless-appsync-plugin
 
-custom:
-  appSync:
-    - name: finance-tracker-api-${self:provider.stage}
-      authenticationType: API_KEY
-      schema: schema.graphql
-      mappingTemplatesLocation: mapping-templates
-      mappingTemplates:
-        - dataSource: TransactionsTable
-          type: Query
-          field: getTransactions
-          request: get-transactions-request.vtl
-          response: get-transactions-response.vtl
-        - dataSource: TransactionsTable
-          type: Mutation
-          field: addTransaction
-          request: add-transaction-request.vtl
-          response: add-transaction-response.vtl
-      dataSources:
-        - type: AMAZON_DYNAMODB
-          name: TransactionsTable
-          description: "Transaction records"
-          config:
-            tableName: !Ref TransactionsTable
+# custom:
+#   appSync:
+#     name: finance-tracker-api
+#     authentication:
+#       type: API_KEY
+#     schema: schema.graphql
 
 resources:
   Resources:
+    # AppSync GraphQL API
+    AppSyncApi:
+      Type: AWS::AppSync::GraphQLApi
+      Properties:
+        Name: finance-tracker-api-${self:provider.stage}
+        AuthenticationType: API_KEY
+        
+    # API Key for AppSync
+    AppSyncApiKey:
+      Type: AWS::AppSync::ApiKey
+      Properties:
+        ApiId: !GetAtt AppSyncApi.ApiId
+        Description: "API Key for Finance Tracker"
+        Expires: 1767225600  # 1 year from now (max allowed)
+        
+    # GraphQL Schema
+    AppSyncSchema:
+      Type: AWS::AppSync::GraphQLSchema
+      Properties:
+        ApiId: !GetAtt AppSyncApi.ApiId
+        Definition: |
+          type Transaction {
+            id: ID!
+            amount: Float!
+            description: String!
+            category: String
+            date: String!
+            type: TransactionType!
+            createdAt: String!
+            updatedAt: String!
+          }
+
+          enum TransactionType {
+            INCOME
+            EXPENSE
+          }
+
+          type Query {
+            getTransactions: [Transaction]
+            getTransaction(id: ID!): Transaction
+          }
+
+          type Mutation {
+            createTransaction(input: CreateTransactionInput!): Transaction
+            updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction
+            deleteTransaction(id: ID!): Boolean
+          }
+
+          input CreateTransactionInput {
+            amount: Float!
+            description: String!
+            category: String
+            date: String!
+            type: TransactionType!
+          }
+
+          input UpdateTransactionInput {
+            amount: Float
+            description: String
+            category: String
+            date: String
+            type: TransactionType
+          }
+
+    # DynamoDB Table
     TransactionsTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -50,12 +101,14 @@ resources:
             KeyType: HASH
 
   Outputs:
-    TransactionsTableName:
-      Description: "DynamoDB table for transactions"
-      Value: !Ref TransactionsTable
-    AppSyncAPIURL:
-      Description: "AppSync GraphQL API endpoint"
-      Value:
-        Fn::GetAtt:
-          - GraphQlApi
-          - GraphQLUrl
+    GraphQLApiEndpoint:
+      Description: "AppSync GraphQL API Endpoint"
+      Value: !GetAtt AppSyncApi.GraphQLUrl
+      
+    GraphQLApiId:
+      Description: "AppSync GraphQL API ID"
+      Value: !Ref AppSyncApi
+      
+    GraphQLApiKey:
+      Description: "AppSync API Key"
+      Value: !GetAtt AppSyncApiKey.ApiKey

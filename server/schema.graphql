@@ -1,42 +1,15 @@
 type Transaction {
   id: ID!
   amount: Float!
-  description: String!
+  type: String!
   category: String
-  date: String!
-  type: TransactionType!
-  createdAt: String!
-  updatedAt: String!
-}
-
-enum TransactionType {
-  INCOME
-  EXPENSE
+  createdAt: AWSDateTime
 }
 
 type Query {
   getTransactions: [Transaction]
-  getTransaction(id: ID!): Transaction
 }
 
 type Mutation {
-  createTransaction(input: CreateTransactionInput!): Transaction
-  updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction
-  deleteTransaction(id: ID!): Boolean
+  addTransaction(id: ID!, amount: Float!, type: String!): Transaction
 }
-
-input CreateTransactionInput {
-  amount: Float!
-  description: String!
-  category: String
-  date: String!
-  type: TransactionType!
-}
-
-input UpdateTransactionInput {
-  amount: Float
-  description: String
-  category: String
-  date: String
-  type: TransactionType
-} 
