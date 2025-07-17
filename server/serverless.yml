@@ -7,45 +7,40 @@ provider:
   runtime: nodejs18.x
   region: us-east-1
   stage: ${opt:stage, 'dev'}
-  # environment:
-    # COGNITO_USER_POOL_ID: 
-    #   Ref: CognitoUserPool
 
 plugins:
   - serverless-appsync-plugin
 
 custom:
   appSync:
-    name: finance-tracker-api
-    authenticationType: API_KEY
-    schema: schema.graphql
-    mappingTemplatesLocation: mapping-templates
-    mappingTemplates:
-      - dataSource: TransactionsTable
-        type: Query
-        field: getTransactions
-        request: get-transactions-request.vtl
-        response: get-transactions-response.vtl
-    dataSources:
-      - type: AMAZON_DYNAMODB
-        name: TransactionsTable
-        description: "DynamoDB table for transactions"
-        config:
-          tableName: 
-            Ref: TransactionsTable
+    - name: finance-tracker-api-${self:provider.stage}
+      authenticationType: API_KEY
+      schema: schema.graphql
+      mappingTemplatesLocation: mapping-templates
+      mappingTemplates:
+        - dataSource: TransactionsTable
+          type: Query
+          field: getTransactions
+          request: get-transactions-request.vtl
+          response: get-transactions-response.vtl
+        - dataSource: TransactionsTable
+          type: Mutation
+          field: addTransaction
+          request: add-transaction-request.vtl
+          response: add-transaction-response.vtl
+      dataSources:
+        - type: AMAZON_DYNAMODB
+          name: TransactionsTable
+          description: "Transaction records"
+          config:
+            tableName: !Ref TransactionsTable
 
 resources:
   Resources:
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: FinanceTrackerUserPool
-        AutoVerifiedAttributes: [email]
-
     TransactionsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: TransactionsTable
+        TableName: TransactionsTable-${self:provider.stage}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id
@@ -54,3 +49,13 @@ resources:
           - AttributeName: id
             KeyType: HASH
 
+  Outputs:
+    TransactionsTableName:
+      Description: "DynamoDB table for transactions"
+      Value: !Ref TransactionsTable
+    AppSyncAPIURL:
+      Description: "AppSync GraphQL API endpoint"
+      Value:
+        Fn::GetAtt:
+          - GraphQlApi
+          - GraphQLUrl
