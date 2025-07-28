@@ -1,4 +1,4 @@
-export interface Expense {
+export interface Transaction {
   id: number;
   category: {
     name: string;
@@ -9,9 +9,11 @@ export interface Expense {
   amount: number;
   date: string;
   description: string;
+  type: 'income' | 'expense';
 }
 
-export const mockExpenses: Expense[] = [
+export const mockTransactions: Transaction[] = [
+  // Expenses
   { 
     id: 1, 
     category: { 
@@ -22,7 +24,8 @@ export const mockExpenses: Expense[] = [
     }, 
     amount: 25.50, 
     date: '2025-07-28', 
-    description: 'Lunch at cafe' 
+    description: 'Lunch at cafe',
+    type: 'expense'
   },
   { 
     id: 2, 
@@ -34,7 +37,8 @@ export const mockExpenses: Expense[] = [
     }, 
     amount: 12.00, 
     date: '2025-07-28', 
-    description: 'Bus ticket' 
+    description: 'Bus ticket',
+    type: 'expense'
   },
   { 
     id: 3, 
@@ -46,7 +50,8 @@ export const mockExpenses: Expense[] = [
     }, 
     amount: 89.99, 
     date: '2025-07-27', 
-    description: 'Groceries' 
+    description: 'Groceries',
+    type: 'expense'
   },
   { 
     id: 4, 
@@ -58,7 +63,8 @@ export const mockExpenses: Expense[] = [
     }, 
     amount: 35.20, 
     date: '2025-07-27', 
-    description: 'Dinner' 
+    description: 'Dinner',
+    type: 'expense'
   },
   { 
     id: 5, 
@@ -70,7 +76,8 @@ export const mockExpenses: Expense[] = [
     }, 
     amount: 15.00, 
     date: '2025-07-26', 
-    description: 'Movie ticket' 
+    description: 'Movie ticket',
+    type: 'expense'
   },
   {
     id: 6,
@@ -82,7 +89,8 @@ export const mockExpenses: Expense[] = [
     },
     amount: 120.00,
     date: '2025-07-25',
-    description: 'Doctor visit'
+    description: 'Doctor visit',
+    type: 'expense'
   },
   {
     id: 7,
@@ -94,7 +102,8 @@ export const mockExpenses: Expense[] = [
     },
     amount: 45.99,
     date: '2025-07-24',
-    description: 'Clothing'
+    description: 'Clothing',
+    type: 'expense'
   },
   {
     id: 8,
@@ -106,17 +115,101 @@ export const mockExpenses: Expense[] = [
     },
     amount: 8.50,
     date: '2025-07-24',
-    description: 'Parking fee'
+    description: 'Parking fee',
+    type: 'expense'
+  },
+  // Incomes
+  {
+    id: 9,
+    category: {
+      name: 'Salary',
+      color: '#27AE60',
+      icon: '💼',
+      shortName: 'SAL'
+    },
+    amount: 3500.00,
+    date: '2025-07-25',
+    description: 'Monthly salary',
+    type: 'income'
+  },
+  {
+    id: 10,
+    category: {
+      name: 'Freelance',
+      color: '#2ECC71',
+      icon: '💻',
+      shortName: 'FRL'
+    },
+    amount: 450.00,
+    date: '2025-07-23',
+    description: 'Web development project',
+    type: 'income'
+  },
+  {
+    id: 11,
+    category: {
+      name: 'Investment',
+      color: '#16A085',
+      icon: '📈',
+      shortName: 'INV'
+    },
+    amount: 125.50,
+    date: '2025-07-22',
+    description: 'Stock dividend',
+    type: 'income'
+  },
+  {
+    id: 12,
+    category: {
+      name: 'Side Business',
+      color: '#1ABC9C',
+      icon: '🏪',
+      shortName: 'SBZ'
+    },
+    amount: 280.00,
+    date: '2025-07-21',
+    description: 'Online store sales',
+    type: 'income'
+  },
+  {
+    id: 13,
+    category: {
+      name: 'Gift',
+      color: '#58D68D',
+      shortName: 'GFT',
+      icon: '🎁'
+    },
+    amount: 100.00,
+    date: '2025-07-20',
+    description: 'Birthday gift money',
+    type: 'income'
   }
 ];
 
-export const mockCategories = [
-  { name: 'Food', color: '#FF6B6B', icon: '🍽️', shortName: 'FOD' },
-  { name: 'Transportation', color: '#4ECDC4', icon: '🚗', shortName: 'TRN' },
-  { name: 'Shopping', color: '#45B7D1', icon: '🛒', shortName: 'SHP' },
-  { name: 'Entertainment', color: '#96CEB4', icon: '🎬', shortName: 'ENT' },
-  { name: 'Health', color: '#E74C3C', icon: '🏥', shortName: 'HTH' },
-  { name: 'Bills', color: '#F39C12', icon: '📄', shortName: 'BLL' },
-  { name: 'Education', color: '#9B59B6', icon: '📚', shortName: 'EDU' },
-  { name: 'Travel', color: '#1ABC9C', icon: '✈️', shortName: 'TRV' },
+// Legacy export for backward compatibility
+export const mockExpenses = mockTransactions.filter(t => t.type === 'expense');
+export type Expense = Transaction;
+
+export const expenseCategories = [
+  { name: 'Food', color: '#FF6B6B', icon: '🍽️', shortName: 'FOD', type: 'expense' },
+  { name: 'Transportation', color: '#4ECDC4', icon: '🚗', shortName: 'TRN', type: 'expense' },
+  { name: 'Shopping', color: '#45B7D1', icon: '🛒', shortName: 'SHP', type: 'expense' },
+  { name: 'Entertainment', color: '#96CEB4', icon: '🎬', shortName: 'ENT', type: 'expense' },
+  { name: 'Health', color: '#E74C3C', icon: '🏥', shortName: 'HTH', type: 'expense' },
+  { name: 'Bills', color: '#F39C12', icon: '📄', shortName: 'BLL', type: 'expense' },
+  { name: 'Education', color: '#9B59B6', icon: '📚', shortName: 'EDU', type: 'expense' },
+  { name: 'Travel', color: '#1ABC9C', icon: '✈️', shortName: 'TRV', type: 'expense' },
 ];
+
+export const incomeCategories = [
+  { name: 'Salary', color: '#27AE60', icon: '💼', shortName: 'SAL', type: 'income' },
+  { name: 'Freelance', color: '#2ECC71', icon: '💻', shortName: 'FRL', type: 'income' },
+  { name: 'Investment', color: '#16A085', icon: '📈', shortName: 'INV', type: 'income' },
+  { name: 'Side Business', color: '#1ABC9C', icon: '🏪', shortName: 'SBZ', type: 'income' },
+  { name: 'Gift', color: '#58D68D', icon: '🎁', shortName: 'GFT', type: 'income' },
+  { name: 'Rental', color: '#52C41A', icon: '🏠', shortName: 'RNT', type: 'income' },
+  { name: 'Bonus', color: '#73D13D', icon: '🎯', shortName: 'BNS', type: 'income' },
+  { name: 'Other', color: '#95DE64', icon: '💰', shortName: 'OTH', type: 'income' },
+];
+
+export const allCategories = [...expenseCategories, ...incomeCategories];

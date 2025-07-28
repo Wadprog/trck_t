@@ -2,21 +2,27 @@ import React, { useState } from 'react';
 import { ScrollView, TouchableOpacity, FlatList, View } from 'react-native';
 import { Text } from '@/components/Themed';
 import Transaction from '@/components/Transaction';
-import SimplePieChart from '@/components/SimplePieChart';
+import CategoryBreakdownModal from '@/components/CategoryBreakdownModal';
 import DateRangePicker from '@/components/DateRangePicker';
-import { useExpenseData } from '@/hooks/useExpenseData';
+import { useTransactionData } from '@/hooks/useTransactionData';
 import { formatCurrency } from '@/utils/expenseUtils';
-import { Expense } from '@/seed/mockData';
+import { Transaction as TransactionType } from '@/seed/mockData';
 
 export default function TabOneScreen() {
-  const [viewMode, setViewMode] = useState<'chart' | 'list'>('chart');
-  const [selectedTransaction, setSelectedTransaction] = useState<Expense | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionType | null>(null);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [categoryModalType, setCategoryModalType] = useState<'income' | 'expense'>('expense');
+  const [categoryViewMode, setCategoryViewMode] = useState<'chart' | 'list'>('chart');
   
-  const expenseData = useExpenseData();
+  const transactionData = useTransactionData();
   const {
-    expenses,
+    transactions,
     pieChartData,
     totalExpenses,
+    totalIncome,
+    netBalance,
+    filterType,
+    setFilterType,
     dateRangeText,
     setTodayRange,
     setLastWeekRange,
@@ -24,7 +30,7 @@ export default function TabOneScreen() {
     setDateRange,
     startDate,
     endDate,
-  } = expenseData;
+  } = transactionData;
 
   const currentDate = new Date().toLocaleDateString('en-US', { 
     weekday: 'long', 
@@ -33,8 +39,13 @@ export default function TabOneScreen() {
     day: 'numeric' 
   });
 
-  const toggleViewMode = () => {
-    setViewMode(viewMode === 'chart' ? 'list' : 'chart');
+  const openCategoryModal = (type: 'income' | 'expense') => {
+    setCategoryModalType(type);
+    setCategoryModalVisible(true);
+  };
+
+  const toggleCategoryViewMode = () => {
+    setCategoryViewMode(categoryViewMode === 'chart' ? 'list' : 'chart');
   };
 
   return (
@@ -43,8 +54,62 @@ export default function TabOneScreen() {
       <ScrollView className="max-h-[60%]" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-white rounded-xl mx-4 mt-4 shadow-sm p-5 pt-16">
-          <Text className="text-3xl font-bold text-gray-800 mb-2">Expenses Tracker</Text>
+          <Text className="text-3xl font-bold text-gray-800 mb-2">Financial Tracker</Text>
           <Text className="text-base text-gray-600 mb-4">{currentDate}</Text>
+          
+          {/* Summary Cards */}
+          <View className="flex-row justify-between mb-4">
+            <TouchableOpacity 
+              className="flex-1 bg-green-50 rounded-lg p-3 mr-2"
+              onPress={() => openCategoryModal('income')}
+            >
+              <Text className="text-sm font-medium text-green-700">Total Income</Text>
+              <Text className="text-lg font-bold text-green-600">{formatCurrency(totalIncome)}</Text>
+              <Text className="text-xs text-green-600 mt-1">Tap for details</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              className="flex-1 bg-red-50 rounded-lg p-3 mx-1"
+              onPress={() => openCategoryModal('expense')}
+            >
+              <Text className="text-sm font-medium text-red-700">Total Expenses</Text>
+              <Text className="text-lg font-bold text-red-600">{formatCurrency(totalExpenses)}</Text>
+              <Text className="text-xs text-red-600 mt-1">Tap for details</Text>
+            </TouchableOpacity>
+            <View className="flex-1 bg-blue-50 rounded-lg p-3 ml-2">
+              <Text className="text-sm font-medium text-blue-700">Net Balance</Text>
+              <Text className={`text-lg font-bold ${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(Math.abs(netBalance))}
+              </Text>
+            </View>
+          </View>
+
+          {/* Filter Buttons */}
+          <View className="flex-row justify-center mb-4">
+            <TouchableOpacity
+              className={`px-4 py-2 rounded-l-lg border ${filterType === 'all' ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-300'}`}
+              onPress={() => setFilterType('all')}
+            >
+              <Text className={`text-sm font-medium ${filterType === 'all' ? 'text-white' : 'text-gray-700'}`}>
+                All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`px-4 py-2 border-t border-b ${filterType === 'income' ? 'bg-green-500 border-green-500' : 'bg-white border-gray-300'}`}
+              onPress={() => setFilterType('income')}
+            >
+              <Text className={`text-sm font-medium ${filterType === 'income' ? 'text-white' : 'text-gray-700'}`}>
+                Income
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`px-4 py-2 rounded-r-lg border ${filterType === 'expense' ? 'bg-red-500 border-red-500' : 'bg-white border-gray-300'}`}
+              onPress={() => setFilterType('expense')}
+            >
+              <Text className={`text-sm font-medium ${filterType === 'expense' ? 'text-white' : 'text-gray-700'}`}>
+                Expenses
+              </Text>
+            </TouchableOpacity>
+          </View>
           
           {/* Date Range Selector */}
           <DateRangePicker
@@ -57,59 +122,31 @@ export default function TabOneScreen() {
             dateRangeText={dateRangeText}
           />
         </View>
-
-        {/* Chart Section */}
-        <View className="bg-white mx-4 my-2 p-4 rounded-xl shadow-sm">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-lg font-semibold text-gray-800">Expenses by Category</Text>
-            <TouchableOpacity 
-              className="bg-gray-100 px-3 py-2 rounded-full border border-gray-200"
-              onPress={toggleViewMode}
-            >
-              <Text className="text-sm font-medium text-gray-700">
-                {viewMode === 'chart' ? '📊 List' : '📈 Chart'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          
-          {/* Conditional rendering based on view mode */}
-          {viewMode === 'chart' ? (
-            <SimplePieChart data={pieChartData} />
-          ) : (
-            <View className="mt-1">
-              {pieChartData.map((item) => {
-                const percentage = ((item.amount / totalExpenses) * 100);
-                return (
-                  <View key={item.name} className="flex-row justify-between items-center py-2 border-b border-gray-100">
-                    <View className="flex-row items-center flex-1">
-                      <Text className="text-base mr-3 w-5 text-center">{item.icon}</Text>
-                      <Text className="text-base font-medium text-gray-800">{item.name}</Text>
-                    </View>
-                    <View className="items-end">
-                      <Text className="text-base font-semibold text-red-600">{formatCurrency(item.amount)}</Text>
-                      <Text className="text-xs text-gray-500 mt-1">{percentage.toFixed(1)}%</Text>
-                    </View>
-                  </View>
-                );
-              })}
-              <View className="flex-row justify-between items-center pt-3 mt-2 border-t-2 border-gray-200">
-                <Text className="text-lg font-bold text-gray-800">Total Expenses</Text>
-                <Text className="text-lg font-bold text-red-600">{formatCurrency(totalExpenses)}</Text>
-              </View>
-            </View>
-          )}
-        </View>
       </ScrollView>
 
       {/* Transactions List - Now with guaranteed visibility */}
       <View className="flex-1 bg-white mx-4 mb-4 rounded-xl shadow-sm">
-        <Text className="text-xl font-semibold text-gray-800 p-5 pb-3">Recent Transactions</Text>
+        <View className="flex-row justify-between items-center p-5 pb-3">
+          <Text className="text-xl font-semibold text-gray-800">
+            Recent {filterType === 'all' ? 'Transactions' : 
+                     filterType === 'income' ? 'Income' : 
+                     'Expenses'}
+          </Text>
+          {filterType !== 'all' && (
+            <TouchableOpacity 
+              onPress={() => openCategoryModal(filterType)}
+              className="bg-gray-100 px-3 py-2 rounded-full"
+            >
+              <Text className="text-sm font-medium text-green-700">See by category</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <FlatList
-          data={expenses}
+          data={transactions}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Transaction
-              expense={item}
+              transaction={item}
               mode="list"
               onPress={() => setSelectedTransaction(item)}
             />
@@ -123,11 +160,22 @@ export default function TabOneScreen() {
       {/* Transaction Detail Modal */}
       {selectedTransaction && (
         <Transaction
-          expense={selectedTransaction}
+          transaction={selectedTransaction}
           mode="detail"
           onClose={() => setSelectedTransaction(null)}
         />
       )}
+
+      {/* Category Breakdown Modal */}
+      <CategoryBreakdownModal
+        visible={categoryModalVisible}
+        onClose={() => setCategoryModalVisible(false)}
+        type={categoryModalType}
+        pieChartData={pieChartData}
+        total={categoryModalType === 'income' ? totalIncome : totalExpenses}
+        viewMode={categoryViewMode}
+        onToggleViewMode={toggleCategoryViewMode}
+      />
     </View>
   );
 }

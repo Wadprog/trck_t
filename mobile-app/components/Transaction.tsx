@@ -4,7 +4,7 @@ import { TouchableOpacity, View, Modal, Text } from 'react-native';
 import Icon from '@expo/vector-icons/Ionicons';
 
 interface TransactionProps {
-  expense: {
+  transaction: {
     id: number;
     category: {
       name: string;
@@ -15,13 +15,20 @@ interface TransactionProps {
     amount: number;
     date: string;
     description: string;
+    type: 'income' | 'expense';
   };
   mode: 'list' | 'detail';
   onPress?: () => void;
   onClose?: () => void;
 }
 
-const Transaction = ({ expense, mode, onPress, onClose }: TransactionProps) => {
+const Transaction = ({ transaction, mode, onPress, onClose }: TransactionProps) => {
+  const isIncome = transaction.type === 'income';
+  const amountColor = isIncome ? 'text-green-600' : 'text-red-600';
+  const amountPrefix = isIncome ? '+' : '-';
+  const typeLabel = isIncome ? 'Income' : 'Expense';
+  const typeIcon = isIncome ? '💰' : '💸';
+  
   if (mode === 'list') {
     return (
       <TouchableOpacity 
@@ -29,14 +36,21 @@ const Transaction = ({ expense, mode, onPress, onClose }: TransactionProps) => {
         onPress={onPress}
       >
         <View className="flex-1">
-          <Text className="text-base font-medium text-gray-800 mb-1">{expense.description}</Text>
+          <View className="flex-row items-center mb-1">
+            <View 
+              className={`w-2 h-2 rounded-full mr-3 ${isIncome ? 'bg-green-500' : 'bg-red-500'}`}
+            />
+            <Text className="text-base font-medium text-gray-800">{transaction.description}</Text>
+          </View>
           <Text className="text-sm text-gray-600">
-            {expense.category.icon} {expense.category.name}
+            {transaction.category.icon} {transaction.category.name}
           </Text>
         </View>
         <View className="items-end">
-          <Text className="text-base font-semibold text-red-600">-${expense.amount.toFixed(2)}</Text>
-          <Text className="text-xs text-gray-400 mt-1">{expense.date}</Text>
+          <Text className={`text-base font-semibold ${amountColor}`}>
+            {amountPrefix}${transaction.amount.toFixed(2)}
+          </Text>
+          <Text className="text-xs text-gray-400 mt-1">{transaction.date}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -60,35 +74,45 @@ const Transaction = ({ expense, mode, onPress, onClose }: TransactionProps) => {
 
         {/* Transaction Info */}
         <View className="flex-1 p-5">
-          {/* Category Section */}
+          {/* Type & Category Section */}
           <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className="text-sm font-semibold text-gray-500">Type</Text>
+              <View className={`px-3 py-1 rounded-full ${isIncome ? 'bg-green-100' : 'bg-red-100'}`}>
+                <Text className={`text-sm font-semibold ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
+                  {typeIcon} {typeLabel}
+                </Text>
+              </View>
+            </View>
             <View className="flex-row items-center">
               <View 
                 className="w-4 h-4 rounded-full mr-3"
-                style={{ backgroundColor: expense.category.color }}
+                style={{ backgroundColor: transaction.category.color }}
               />
-              <Text className="text-2xl mr-3">{expense.category.icon}</Text>
-              <Text className="text-xl font-semibold text-gray-800">{expense.category.name}</Text>
+              <Text className="text-2xl mr-3">{transaction.category.icon}</Text>
+              <Text className="text-xl font-semibold text-gray-800">{transaction.category.name}</Text>
             </View>
           </View>
 
           {/* Amount Section */}
           <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
             <Text className="text-sm font-semibold text-gray-500 mb-2">Amount</Text>
-            <Text className="text-3xl font-bold text-red-600">-${expense.amount.toFixed(2)}</Text>
+            <Text className={`text-3xl font-bold ${amountColor}`}>
+              {amountPrefix}${transaction.amount.toFixed(2)}
+            </Text>
           </View>
 
           {/* Description Section */}
           <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
             <Text className="text-sm font-semibold text-gray-500 mb-2">Description</Text>
-            <Text className="text-lg text-gray-800">{expense.description}</Text>
+            <Text className="text-lg text-gray-800">{transaction.description}</Text>
           </View>
 
           {/* Date Section */}
           <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
             <Text className="text-sm font-semibold text-gray-500 mb-2">Date</Text>
             <Text className="text-base text-gray-800">
-              {new Date(expense.date).toLocaleDateString('en-US', {
+              {new Date(transaction.date).toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -100,7 +124,7 @@ const Transaction = ({ expense, mode, onPress, onClose }: TransactionProps) => {
           {/* Additional Info */}
           <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
             <Text className="text-sm font-semibold text-gray-500 mb-2">Transaction ID</Text>
-            <Text className="text-base text-gray-600 font-mono">#{expense.id.toString().padStart(6, '0')}</Text>
+            <Text className="text-base text-gray-600 font-mono">#{transaction.id.toString().padStart(6, '0')}</Text>
           </View>
 
           {/* Action Buttons */}
