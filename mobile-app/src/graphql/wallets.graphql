@@ -1,0 +1,107 @@
+# User-related operations
+query GetCurrentUser {
+  me {
+    id
+    email
+    firstName
+    lastName
+    avatar
+    preferences {
+      currency
+      language
+      timezone
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation UpdateUserProfile($input: UpdateUserInput!) {
+  updateUserProfile(input: $input) {
+    id
+    email
+    firstName
+    lastName
+    avatar
+  }
+}
+
+# Wallet operations
+query GetWallets {
+  wallets {
+    id
+    name
+    description
+    icon
+    color
+    isDefault
+    balance
+    createdAt
+    updatedAt
+  }
+}
+
+query GetWallet($id: ID!) {
+  wallet(id: $id) {
+    id
+    name
+    description
+    icon
+    color
+    isDefault
+    balance
+    sources {
+      id
+      name
+      type
+      balance
+      isActive
+    }
+    transactions(limit: 50) {
+      id
+      amount
+      description
+      type
+      category {
+        id
+        name
+        icon
+      }
+      source {
+        id
+        name
+      }
+      createdAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateWallet($input: CreateWalletInput!) {
+  createWallet(input: $input) {
+    id
+    name
+    description
+    icon
+    color
+    isDefault
+    balance
+  }
+}
+
+mutation UpdateWallet($id: ID!, $input: UpdateWalletInput!) {
+  updateWallet(id: $id, input: $input) {
+    id
+    name
+    description
+    icon
+    color
+    isDefault
+    balance
+  }
+}
+
+mutation DeleteWallet($id: ID!) {
+  deleteWallet(id: $id)
+}

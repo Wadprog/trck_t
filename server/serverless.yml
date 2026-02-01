@@ -12,151 +12,126 @@ provider:
       Ref: CognitoUserPool
     COGNITO_USER_POOL_CLIENT_ID:
       Ref: CognitoUserPoolClient
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - rds:DescribeDBInstances
+            - rds:DescribeDBClusters
+            - secretsmanager:GetSecretValue
+            - secretsmanager:DescribeSecret
+          Resource: '*'
 
-# plugins:
-#   - serverless-appsync-plugin
+functions:
+  # Categories Functions
+  getCategories:
+    handler: src/resolvers/categories-simple.getCategories
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseSecret
 
-# custom:
-#   appSync:
-#     name: finance-tracker-api
-#     authentication:
-#       type: API_KEY
-#     schema: schema.graphql
+  getCategory:
+    handler: src/resolvers/categories-simple.getCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseSecret
+
+  createCategory:
+    handler: src/resolvers/categories-simple.createCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseSecret
+
+  updateCategory:
+    handler: src/resolvers/categories-simple.updateCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseSecret
+
+  deleteCategory:
+    handler: src/resolvers/categories-simple.deleteCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseSecret
 
 resources:
-  Resources:
-    # Cognito User Pool
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: finance-tracker-users-${self:provider.stage}
-        UsernameAttributes:
-          - email
-        AutoVerifiedAttributes:
-          - email
-        Policies:
-          PasswordPolicy:
-            MinimumLength: 8
-            RequireUppercase: true
-            RequireLowercase: true
-            RequireNumbers: true
-            RequireSymbols: false
-        Schema:
-          - Name: email
-            AttributeDataType: String
-            Required: true
-            Mutable: true
-          - Name: name
-            AttributeDataType: String
-            Required: true
-            Mutable: true
-
-    # Cognito User Pool Client
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        UserPoolId: !Ref CognitoUserPool
-        ClientName: finance-tracker-client-${self:provider.stage}
-        GenerateSecret: false
-        ExplicitAuthFlows:
-          - ALLOW_USER_SRP_AUTH
-          - ALLOW_USER_PASSWORD_AUTH
-          - ALLOW_REFRESH_TOKEN_AUTH
-        PreventUserExistenceErrors: ENABLED
-        RefreshTokenValidity: 30
-        AccessTokenValidity: 60
-        IdTokenValidity: 60
-        TokenValidityUnits:
-          RefreshToken: days
-          AccessToken: minutes
-          IdToken: minutes
-
-    # AppSync GraphQL API
-    AppSyncApi:
-      Type: AWS::AppSync::GraphQLApi
-      Properties:
-        Name: finance-tracker-api-${self:provider.stage}
-        AuthenticationType: AMAZON_COGNITO_USER_POOLS
-        UserPoolConfig:
-          UserPoolId: !Ref CognitoUserPool
-          AwsRegion: ${self:provider.region}
-          DefaultAction: ALLOW
+  - ${file(resources/cognito.yml)}
+  - ${file(resources/database-clean.yml)}
+  - ${file(resources/appsync.yml)}
+  - Outputs:
+      GraphQLApiEndpoint:
+        Description: "AppSync GraphQL API Endpoint"
+        Value: !GetAtt AppSyncApi.GraphQLUrl
         
-    # GraphQL Schema
-    AppSyncSchema:
-      Type: AWS::AppSync::GraphQLSchema
-      Properties:
-        ApiId: !GetAtt AppSyncApi.ApiId
-        Definition: |
-          type Transaction {
-            id: ID!
-            amount: Float!
-            description: String!
-            category: String
-            date: String!
-            type: TransactionType!
-            createdAt: String!
-            updatedAt: String!
-          }
-
-          enum TransactionType {
-            INCOME
-            EXPENSE
-          }
-
-          type Query {
-            getTransactions: [Transaction]
-            getTransaction(id: ID!): Transaction
-          }
-
-          type Mutation {
-            createTransaction(input: CreateTransactionInput!): Transaction
-            updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction
-            deleteTransaction(id: ID!): Boolean
-          }
-
-          input CreateTransactionInput {
-            amount: Float!
-            description: String!
-            category: String
-            date: String!
-            type: TransactionType!
-          }
-
-          input UpdateTransactionInput {
-            amount: Float
-            description: String
-            category: String
-            date: String
-            type: TransactionType
-          }
-
-    # DynamoDB Table
-    TransactionsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: TransactionsTable-${self:provider.stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-
-  Outputs:
-    GraphQLApiEndpoint:
-      Description: "AppSync GraphQL API Endpoint"
-      Value: !GetAtt AppSyncApi.GraphQLUrl
-      
-    GraphQLApiId:
-      Description: "AppSync GraphQL API ID"
-      Value: !Ref AppSyncApi
-      
-    CognitoUserPoolId:
-      Description: "Cognito User Pool ID"
-      Value: !Ref CognitoUserPool
-      
-    CognitoUserPoolClientId:
-      Description: "Cognito User Pool Client ID"
-      Value: !Ref CognitoUserPoolClient
+      GraphQLApiId:
+        Description: "AppSync GraphQL API ID"
+        Value: !Ref AppSyncApi
+        
+      GraphQLApiKey:
+        Description: "AppSync GraphQL API Key"
+        Value: !GetAtt AppSyncApiKey.ApiKey
+        
+      CognitoUserPoolId:
+        Description: "Cognito User Pool ID"
+        Value: !Ref CognitoUserPool
+        
+      CognitoUserPoolClientId:
+        Description: "Cognito User Pool Client ID"
+        Value: !Ref CognitoUserPoolClient
+        
+      DatabaseEndpoint:
+        Description: "RDS Database Endpoint"
+        Value: !GetAtt DatabaseInstance.Endpoint.Address
+        
+      DatabasePort:
+        Description: "RDS Database Port"
+        Value: !GetAtt DatabaseInstance.Endpoint.Port
+        
+      DatabaseName:
+        Description: "RDS Database Name"
+        Value: financetracker
+        
+      DatabaseSecretArn:
+        Description: "RDS Database Secret ARN"
+        Value: !Ref DatabaseSecret

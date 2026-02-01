@@ -1,0 +1,56 @@
+Resources:
+  # AppSync GraphQL API Configuration
+  AppSyncApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: finance-tracker-api-${self:provider.stage}
+      AuthenticationType: AMAZON_COGNITO_USER_POOLS
+      UserPoolConfig:
+        UserPoolId: !Ref CognitoUserPool
+        AwsRegion: ${self:provider.region}
+        DefaultAction: ALLOW
+      AdditionalAuthenticationProviders:
+        - AuthenticationType: API_KEY
+
+  # API Key for development and introspection
+  AppSyncApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      Description: "API Key for development and introspection"
+      Expires: 1767225600  # January 1, 2026 (adjust as needed)
+
+  # GraphQL Schema
+  AppSyncSchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      Definition: ${file(schema.graphql)}
+
+  # Service Role for AppSync
+  AppSyncServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - "arn:aws:dynamodb:${self:provider.region}:*:table/*Table-${self:provider.stage}"
+                  - "arn:aws:dynamodb:${self:provider.region}:*:table/*Table-${self:provider.stage}/index/*"

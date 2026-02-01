@@ -9,6 +9,10 @@ import '../global.css';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
+// Initialize i18n
+import '@/i18n';
+import '@/i18n';
+
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,

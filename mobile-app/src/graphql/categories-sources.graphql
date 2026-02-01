@@ -1,0 +1,144 @@
+# Category operations
+query GetCategories($type: CategoryType) {
+  categories(type: $type) {
+    id
+    name
+    icon
+    color
+    type
+    description
+    isDefault
+    transactionCount
+    totalAmount
+    createdAt
+    updatedAt
+  }
+}
+
+query GetCategory($id: ID!) {
+  category(id: $id) {
+    id
+    name
+    icon
+    color
+    type
+    description
+    isDefault
+    transactionCount
+    totalAmount
+    transactions(limit: 20) {
+      id
+      amount
+      description
+      date
+      source {
+        id
+        name
+      }
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateCategory($input: CreateCategoryInput!) {
+  createCategory(input: $input) {
+    id
+    name
+    icon
+    color
+    type
+    description
+    isDefault
+  }
+}
+
+mutation UpdateCategory($id: ID!, $input: UpdateCategoryInput!) {
+  updateCategory(id: $id, input: $input) {
+    id
+    name
+    icon
+    color
+    type
+    description
+  }
+}
+
+mutation DeleteCategory($id: ID!) {
+  deleteCategory(id: $id)
+}
+
+# Source operations
+query GetSources($walletId: ID!) {
+  sources(walletId: $walletId) {
+    id
+    name
+    type
+    description
+    balance
+    icon
+    color
+    isActive
+    lastUsed
+    wallet {
+      id
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateSource($input: CreateSourceInput!) {
+  createSource(input: $input) {
+    id
+    name
+    type
+    description
+    balance
+    icon
+    color
+    isActive
+    wallet {
+      id
+      name
+    }
+  }
+}
+
+mutation UpdateSource($id: ID!, $input: UpdateSourceInput!) {
+  updateSource(id: $id, input: $input) {
+    id
+    name
+    type
+    description
+    balance
+    icon
+    color
+    isActive
+  }
+}
+
+mutation DeleteSource($id: ID!) {
+  deleteSource(id: $id)
+}
+
+# Transfer operations
+mutation CreateTransfer($input: CreateTransferInput!) {
+  createTransfer(input: $input) {
+    id
+    amount
+    description
+    fromSource {
+      id
+      name
+      balance
+    }
+    toSource {
+      id
+      name
+      balance
+    }
+    createdAt
+  }
+}

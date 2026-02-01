@@ -4,12 +4,42 @@
   "description": "expenses and income  managing application ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stitch-schemas": "node stitch-schemas.js",
+    "generate-types": "graphql-codegen --config codegen.yml",
+    "configure": "node scripts/configure-env.js",
+    "configure:fetch": "node scripts/configure-env.js dev --fetch-aws && node scripts/configure-env.js staging --fetch-aws && node scripts/configure-env.js prod --fetch-aws",
+    "deploy": "serverless deploy",
+    "deploy:dev": "serverless deploy --stage dev",
+    "deploy:staging": "serverless deploy --stage staging",
+    "deploy:prod": "serverless deploy --stage prod",
+    "info": "serverless info",
+    "info:dev": "serverless info --stage dev",
+    "info:staging": "serverless info --stage staging",
+    "info:prod": "serverless info --stage prod",
+    "remove": "serverless remove",
+    "remove:dev": "serverless remove --stage dev",
+    "remove:staging": "serverless remove --stage staging",
+    "remove:prod": "serverless remove --stage prod",
+    "logs": "serverless logs -f",
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "author": "Wadson Vaval.",
   "license": "ISC",
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-graphql-request": "^6.3.0",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@types/node": "^24.1.0",
+    "graphql": "^16.11.0",
     "serverless": "^3.38.0",
-    "serverless-appsync-plugin": "^2.8.0"
+    "serverless-appsync-plugin": "^2.8.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.450.0",
+    "pg": "^8.11.3"
   }
 }

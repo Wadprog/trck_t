@@ -1,0 +1,324 @@
+Resources:
+  # IAM Role for Lambda functions
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: RDSAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds:DescribeDBInstances
+                  - rds:DescribeDBClusters
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                Resource: '*'
+
+  # Lambda Package with all resolver code
+  LambdaLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: finance-tracker-deps
+      Description: Dependencies for finance tracker
+      Content:
+        S3Bucket: !Sub "${AWS::StackName}-lambda-packages"
+        S3Key: lambda-layer.zip
+      CompatibleRuntimes:
+        - nodejs18.x
+
+functions:
+  # Categories Functions
+  getCategories:
+    handler: src/resolvers/categories.getCategories
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  getCategory:
+    handler: src/resolvers/categories.getCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  createCategory:
+    handler: src/resolvers/categories.createCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  updateCategory:
+    handler: src/resolvers/categories.updateCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  deleteCategory:
+    handler: src/resolvers/categories.deleteCategory
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  # Wallets Functions
+  getWallets:
+    handler: src/resolvers/wallets.getWallets
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  getWallet:
+    handler: src/resolvers/wallets.getWallet
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  createWallet:
+    handler: src/resolvers/wallets.createWallet
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  updateWallet:
+    handler: src/resolvers/wallets.updateWallet
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  deleteWallet:
+    handler: src/resolvers/wallets.deleteWallet
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  # Sources Functions
+  getSources:
+    handler: src/resolvers/sources.getSources
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  getSource:
+    handler: src/resolvers/sources.getSource
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  createSource:
+    handler: src/resolvers/sources.createSource
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  updateSource:
+    handler: src/resolvers/sources.updateSource
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  deleteSource:
+    handler: src/resolvers/sources.deleteSource
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  # Transactions Functions
+  getTransactions:
+    handler: src/resolvers/transactions.getTransactions
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  getTransaction:
+    handler: src/resolvers/transactions.getTransaction
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  createTransaction:
+    handler: src/resolvers/transactions.createTransaction
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  updateTransaction:
+    handler: src/resolvers/transactions.updateTransaction
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret
+
+  deleteTransaction:
+    handler: src/resolvers/transactions.deleteTransaction
+    vpc:
+      securityGroupIds:
+        - !Ref LambdaSecurityGroup
+      subnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    environment:
+      DB_HOST: !GetAtt DatabaseInstance.Endpoint.Address
+      DB_PORT: !GetAtt DatabaseInstance.Endpoint.Port
+      DB_NAME: financetracker
+      DB_SECRET_ARN: !Ref DatabaseInstance.MasterUserSecret

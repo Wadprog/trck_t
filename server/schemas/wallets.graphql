@@ -1,0 +1,30 @@
+type Wallet {
+  id: ID!
+  name: String!
+  description: String
+  icon: String!
+  color: String!
+  isDefault: Boolean!
+  balance: Float!
+  sources: [Source]
+  createdAt: String!
+  updatedAt: String!
+}
+
+input CreateWalletInput {
+  name: String!
+  description: String
+  icon: String!
+  color: String!
+  isDefault: Boolean
+  balance: Float
+}
+
+input UpdateWalletInput {
+  name: String
+  description: String
+  icon: String
+  color: String
+  isDefault: Boolean
+  balance: Float
+}

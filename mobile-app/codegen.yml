@@ -1,0 +1,37 @@
+overwrite: true
+schema:
+  "${GRAPHQL_ENDPOINT}":
+    headers:
+      # AppSync requires API key for schema introspection
+      x-api-key: "${AWS_APPSYNC_API_KEY}"
+documents: "src/**/*.{ts,tsx,graphql,gql}"
+generates:
+  src/generated/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      withHooks: true
+      withHOC: false
+      withComponent: false
+      scalars:
+        DateTime: string
+        Date: string
+        Upload: File
+        AWSDateTime: string  # AppSync standard
+        ID: string          # Ensure ID fields are strings
+      namingConvention:
+        typeNames: pascal-case
+        enumValues: upper-case
+        fieldNames: camelCase
+        variableNames: camelCase
+        fragmentName: pascalCase
+        transformUnderscore: true
+  src/generated/introspection.json:
+    plugins:
+      - "introspection"
+  # Remove introspection.json generation - not needed for local schema
+hooks:
+  afterAllFileWrite:
+    - prettier --write

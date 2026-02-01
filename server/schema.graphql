@@ -1,15 +1,215 @@
-type Transaction {
-  id: ID!
-  amount: Float!
-  type: String!
-  category: String
-  createdAt: AWSDateTime
-}
+# Generated GraphQL Schema
+# This file is auto-generated. Do not edit directly.
+# Edit individual schema files in the schemas/ directory instead.
+
+# === BASE SCHEMA ===
+# Base schema that defines the root Query and Mutation types
+# Other schema files will extend these
 
 type Query {
-  getTransactions: [Transaction]
+  # Health check endpoint
+  health: String
 }
 
 type Mutation {
-  addTransaction(id: ID!, amount: Float!, type: String!): Transaction
+  # Placeholder - actual mutations are defined in entity-specific schemas
+  _empty: String
 }
+
+
+# === CATEGORIES SCHEMA ===
+type Category {
+  id: ID!
+  name: String!
+  icon: String!
+  type: CategoryType!
+  color: String!
+  shortName: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+input CreateCategoryInput {
+  name: String!
+  icon: String!
+  type: CategoryType!
+  color: String!
+  shortName: String!
+}
+
+input UpdateCategoryInput {
+  name: String
+  icon: String
+  type: CategoryType
+  color: String
+  shortName: String
+}
+
+extend type Query {
+  getCategories: [Category]
+  getCategory(id: ID!): Category
+  getCategoriesByType(type: CategoryType!): [Category]
+}
+
+extend type Mutation {
+  createCategory(input: CreateCategoryInput!): Category
+  updateCategory(id: ID!, input: UpdateCategoryInput!): Category
+  deleteCategory(id: ID!): Boolean
+}
+
+
+# === TRANSACTIONS SCHEMA ===
+type Transaction {
+  id: ID!
+  amount: Float!
+  description: String!
+  category: String
+  sourceId: String
+  date: String!
+  type: TransactionType!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+input CreateTransactionInput {
+  amount: Float!
+  description: String!
+  category: String
+  sourceId: String
+  date: String!
+  type: TransactionType!
+}
+
+input UpdateTransactionInput {
+  amount: Float
+  description: String
+  category: String
+  sourceId: String
+  date: String
+  type: TransactionType
+}
+
+extend type Query {
+  getTransactions: [Transaction]
+  getTransaction(id: ID!): Transaction
+  getTransactionsBySource(sourceId: ID!): [Transaction]
+}
+
+extend type Mutation {
+  createTransaction(input: CreateTransactionInput!): Transaction
+  updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction
+  deleteTransaction(id: ID!): Boolean
+}
+
+
+# === WALLETS SCHEMA ===
+type Wallet {
+  id: ID!
+  name: String!
+  description: String
+  icon: String!
+  color: String!
+  isDefault: Boolean!
+  balance: Float!
+  sources: [Source]
+  createdAt: String!
+  updatedAt: String!
+}
+
+input CreateWalletInput {
+  name: String!
+  description: String
+  icon: String!
+  color: String!
+  isDefault: Boolean
+  balance: Float
+}
+
+input UpdateWalletInput {
+  name: String
+  description: String
+  icon: String
+  color: String
+  isDefault: Boolean
+  balance: Float
+}
+
+extend type Query {
+  getWallets: [Wallet]
+  getWallet(id: ID!): Wallet
+  getDefaultWallet: Wallet
+}
+
+extend type Mutation {
+  createWallet(input: CreateWalletInput!): Wallet
+  updateWallet(id: ID!, input: UpdateWalletInput!): Wallet
+  deleteWallet(id: ID!): Boolean
+  setDefaultWallet(id: ID!): Wallet
+}
+
+
+# === SOURCES SCHEMA ===
+type Source {
+  id: ID!
+  name: String!
+  type: SourceType!
+  balance: Float!
+  isActive: Boolean!
+  walletId: String!
+  wallet: Wallet
+  transactions: [Transaction]
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum SourceType {
+  BANK_ACCOUNT
+  CREDIT_CARD
+  CASH
+  INVESTMENT
+  SAVINGS
+  CHECKING
+  OTHER
+}
+
+input CreateSourceInput {
+  name: String!
+  type: SourceType!
+  balance: Float
+  isActive: Boolean
+  walletId: String!
+}
+
+input UpdateSourceInput {
+  name: String
+  type: SourceType
+  balance: Float
+  isActive: Boolean
+  walletId: String
+}
+
+extend type Query {
+  getSources: [Source]
+  getSource(id: ID!): Source
+  getSourcesByWallet(walletId: ID!): [Source]
+  getActiveSourcesByWallet(walletId: ID!): [Source]
+}
+
+extend type Mutation {
+  createSource(input: CreateSourceInput!): Source
+  updateSource(id: ID!, input: UpdateSourceInput!): Source
+  deleteSource(id: ID!): Boolean
+  toggleSourceActive(id: ID!): Source
+}
+
+

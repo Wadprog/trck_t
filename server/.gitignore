@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.dev
+.env.staging
+.env.prod
+.env.development
+.env.production
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# AWS
+.aws/
+.serverless/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Generated files
+src/generated/
+
+# Don't commit actual configuration values
+src/config/api.ts.backup

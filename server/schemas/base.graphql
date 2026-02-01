@@ -1,0 +1,52 @@
+# Base schema that defines the root Query and Mutation types
+# All query and mutation fields are defined here
+
+type Query {
+  # Health check endpoint
+  health: String
+  
+  # Categories
+  getCategories: [Category]
+  getCategory(id: ID!): Category
+  getCategoriesByType(type: CategoryType!): [Category]
+  
+  # Transactions
+  getTransactions: [Transaction]
+  getTransaction(id: ID!): Transaction
+  getTransactionsBySource(sourceId: ID!): [Transaction]
+  
+  # Wallets
+  getWallets: [Wallet]
+  getWallet(id: ID!): Wallet
+  getDefaultWallet: Wallet
+  
+  # Sources
+  getSources: [Source]
+  getSource(id: ID!): Source
+  getSourcesByWallet(walletId: ID!): [Source]
+  getActiveSourcesByWallet(walletId: ID!): [Source]
+}
+
+type Mutation {
+  # Categories
+  createCategory(input: CreateCategoryInput!): Category
+  updateCategory(id: ID!, input: UpdateCategoryInput!): Category
+  deleteCategory(id: ID!): Boolean
+  
+  # Transactions
+  createTransaction(input: CreateTransactionInput!): Transaction
+  updateTransaction(id: ID!, input: UpdateTransactionInput!): Transaction
+  deleteTransaction(id: ID!): Boolean
+  
+  # Wallets
+  createWallet(input: CreateWalletInput!): Wallet
+  updateWallet(id: ID!, input: UpdateWalletInput!): Wallet
+  deleteWallet(id: ID!): Boolean
+  setDefaultWallet(id: ID!): Wallet
+  
+  # Sources
+  createSource(input: CreateSourceInput!): Source
+  updateSource(id: ID!, input: UpdateSourceInput!): Source
+  deleteSource(id: ID!): Boolean
+  toggleSourceActive(id: ID!): Source
+}

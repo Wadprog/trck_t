@@ -1,0 +1,38 @@
+type Source {
+  id: ID!
+  name: String!
+  type: SourceType!
+  balance: Float!
+  isActive: Boolean!
+  walletId: String!
+  wallet: Wallet
+  transactions: [Transaction]
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum SourceType {
+  BANK_ACCOUNT
+  CREDIT_CARD
+  CASH
+  INVESTMENT
+  SAVINGS
+  CHECKING
+  OTHER
+}
+
+input CreateSourceInput {
+  name: String!
+  type: SourceType!
+  balance: Float
+  isActive: Boolean
+  walletId: String!
+}
+
+input UpdateSourceInput {
+  name: String
+  type: SourceType
+  balance: Float
+  isActive: Boolean
+  walletId: String
+}

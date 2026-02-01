@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { ScrollView, TouchableOpacity, FlatList, View } from 'react-native';
 import { Text } from '@/components/Themed';
+import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import Icon from '@expo/vector-icons/FontAwesome';
 import Transaction from '@/components/Transaction';
-import CategoryBreakdownModal from '@/components/CategoryBreakdownModal';
 import DateRangePicker from '@/components/DateRangePicker';
 import { useTransactionData } from '@/hooks/useTransactionData';
 import { formatCurrency } from '@/utils/expenseUtils';
@@ -10,9 +12,7 @@ import { Transaction as TransactionType } from '@/seed/mockData';
 
 export default function TabOneScreen() {
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionType | null>(null);
-  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
-  const [categoryModalType, setCategoryModalType] = useState<'income' | 'expense'>('expense');
-  const [categoryViewMode, setCategoryViewMode] = useState<'chart' | 'list'>('chart');
+  const { t } = useTranslation();
   
   const transactionData = useTransactionData();
   const {
@@ -39,13 +39,12 @@ export default function TabOneScreen() {
     day: 'numeric' 
   });
 
-  const openCategoryModal = (type: 'income' | 'expense') => {
-    setCategoryModalType(type);
-    setCategoryModalVisible(true);
-  };
-
-  const toggleCategoryViewMode = () => {
-    setCategoryViewMode(categoryViewMode === 'chart' ? 'list' : 'chart');
+  const navigateToCategoryBreakdown = (type: 'income' | 'expense') => {
+    if (type === 'income') {
+      router.push('/income-breakdown');
+    } else {
+      router.push('/expense-breakdown');
+    }
   };
 
   return (
@@ -61,17 +60,17 @@ export default function TabOneScreen() {
           <View className="flex-row justify-between mb-4">
             <TouchableOpacity 
               className="flex-1 bg-green-50 rounded-lg p-3 mr-2"
-              onPress={() => openCategoryModal('income')}
+              onPress={() => navigateToCategoryBreakdown('income')}
             >
-              <Text className="text-sm font-medium text-green-700">Total Income</Text>
+              <Text className="text-sm font-medium text-green-700">{t('transactions.totalIncome')}</Text>
               <Text className="text-lg font-bold text-green-600">{formatCurrency(totalIncome)}</Text>
               <Text className="text-xs text-green-600 mt-1">Tap for details</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               className="flex-1 bg-red-50 rounded-lg p-3 mx-1"
-              onPress={() => openCategoryModal('expense')}
+              onPress={() => navigateToCategoryBreakdown('expense')}
             >
-              <Text className="text-sm font-medium text-red-700">Total Expenses</Text>
+              <Text className="text-sm font-medium text-red-700">{t('transactions.totalExpenses')}</Text>
               <Text className="text-lg font-bold text-red-600">{formatCurrency(totalExpenses)}</Text>
               <Text className="text-xs text-red-600 mt-1">Tap for details</Text>
             </TouchableOpacity>
@@ -134,7 +133,7 @@ export default function TabOneScreen() {
           </Text>
           {filterType !== 'all' && (
             <TouchableOpacity 
-              onPress={() => openCategoryModal(filterType)}
+              onPress={() => navigateToCategoryBreakdown(filterType)}
               className="bg-gray-100 px-3 py-2 rounded-full"
             >
               <Text className="text-sm font-medium text-green-700">See by category</Text>
@@ -166,16 +165,21 @@ export default function TabOneScreen() {
         />
       )}
 
-      {/* Category Breakdown Modal */}
-      <CategoryBreakdownModal
-        visible={categoryModalVisible}
-        onClose={() => setCategoryModalVisible(false)}
-        type={categoryModalType}
-        pieChartData={pieChartData}
-        total={categoryModalType === 'income' ? totalIncome : totalExpenses}
-        viewMode={categoryViewMode}
-        onToggleViewMode={toggleCategoryViewMode}
-      />
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        className="absolute bottom-6 right-6 w-14 h-14 bg-blue-500 rounded-full shadow-lg items-center justify-center"
+        style={{
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        }}
+        onPress={() => router.push('/create-transaction')}
+        activeOpacity={0.8}
+      >
+        <Icon name="plus" size={24} color="white" />
+      </TouchableOpacity>
     </View>
   );
 }

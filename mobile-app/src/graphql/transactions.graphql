@@ -1,0 +1,158 @@
+# Transaction operations
+query GetTransactions(
+  $walletId: ID
+  $limit: Int = 50
+  $offset: Int = 0
+  $startDate: DateTime
+  $endDate: DateTime
+  $type: TransactionType
+  $categoryId: ID
+) {
+  transactions(
+    walletId: $walletId
+    limit: $limit
+    offset: $offset
+    startDate: $startDate
+    endDate: $endDate
+    type: $type
+    categoryId: $categoryId
+  ) {
+    id
+    amount
+    description
+    type
+    date
+    category {
+      id
+      name
+      icon
+      color
+      type
+    }
+    source {
+      id
+      name
+      type
+      icon
+    }
+    wallet {
+      id
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetTransaction($id: ID!) {
+  transaction(id: $id) {
+    id
+    amount
+    description
+    type
+    date
+    category {
+      id
+      name
+      icon
+      color
+      type
+    }
+    source {
+      id
+      name
+      type
+      icon
+      balance
+    }
+    wallet {
+      id
+      name
+      icon
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateTransaction($input: CreateTransactionInput!) {
+  createTransaction(input: $input) {
+    id
+    amount
+    description
+    type
+    date
+    category {
+      id
+      name
+      icon
+      color
+    }
+    source {
+      id
+      name
+    }
+    wallet {
+      id
+      name
+    }
+  }
+}
+
+mutation UpdateTransaction($id: ID!, $input: UpdateTransactionInput!) {
+  updateTransaction(id: $id, input: $input) {
+    id
+    amount
+    description
+    type
+    date
+    category {
+      id
+      name
+    }
+    source {
+      id
+      name
+    }
+  }
+}
+
+mutation DeleteTransaction($id: ID!) {
+  deleteTransaction(id: $id)
+}
+
+# Transaction analytics
+query GetTransactionAnalytics(
+  $walletId: ID
+  $startDate: DateTime!
+  $endDate: DateTime!
+  $groupBy: AnalyticsGroupBy = CATEGORY
+) {
+  transactionAnalytics(
+    walletId: $walletId
+    startDate: $startDate
+    endDate: $endDate
+    groupBy: $groupBy
+  ) {
+    totalIncome
+    totalExpenses
+    netBalance
+    categoryBreakdown {
+      category {
+        id
+        name
+        icon
+        color
+      }
+      totalAmount
+      transactionCount
+      percentage
+    }
+    monthlyTrends {
+      month
+      income
+      expenses
+      net
+    }
+  }
+}

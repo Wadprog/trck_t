@@ -1,0 +1,31 @@
+type Category {
+  id: ID!
+  name: String!
+  icon: String!
+  type: CategoryType!
+  color: String!
+  shortName: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+input CreateCategoryInput {
+  name: String!
+  icon: String!
+  type: CategoryType!
+  color: String!
+  shortName: String!
+}
+
+input UpdateCategoryInput {
+  name: String
+  icon: String
+  type: CategoryType
+  color: String
+  shortName: String
+}

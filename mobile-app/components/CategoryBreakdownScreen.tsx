@@ -1,15 +1,13 @@
 import React from 'react';
-import { Modal, View, TouchableOpacity, FlatList } from 'react-native';
+import { View, FlatList, ScrollView } from 'react-native';
 import { Text } from '@/components/Themed';
-import Icon from '@expo/vector-icons/Ionicons';
+import { Stack } from 'expo-router';
 import SimplePieChart from '@/components/SimplePieChart';
 import BudgetComparisonTable from '@/components/BudgetComparisonTable';
 import { formatCurrency } from '@/utils/expenseUtils';
 import { CategoryBudget } from '@/seed/mockData';
 
-interface CategoryBreakdownModalProps {
-  visible: boolean;
-  onClose: () => void;
+interface CategoryBreakdownScreenProps {
   type: 'income' | 'expense';
   pieChartData: Array<{
     name: string;
@@ -24,16 +22,14 @@ interface CategoryBreakdownModalProps {
   budgets?: CategoryBudget[];
 }
 
-const CategoryBreakdownModal = ({
-  visible,
-  onClose,
+const CategoryBreakdownScreen = ({
   type,
   pieChartData,
   total,
   viewMode,
   onToggleViewMode,
   budgets = [],
-}: CategoryBreakdownModalProps) => {
+}: CategoryBreakdownScreenProps) => {
   const isIncome = type === 'income';
   const title = isIncome ? 'Income by Category' : 'Expenses by Category';
   const totalLabel = isIncome ? 'Total Income' : 'Total Expenses';
@@ -50,29 +46,32 @@ const CategoryBreakdownModal = ({
   });
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-gray-50">
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-5 pt-16 pb-5 bg-white border-b border-gray-200">
-          <TouchableOpacity 
-            className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
-            onPress={onClose}
-          >
-            <Icon name="close-outline" size={20} color="#666" />
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-gray-800">{title}</Text>
-          <TouchableOpacity 
-            className="bg-gray-100 px-3 py-2 rounded-full border border-gray-200"
-            onPress={onToggleViewMode}
-          >
-            <Text className="text-sm font-medium text-gray-700">
-              {viewMode === 'chart' ? '📊 List' : '📈 Chart'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Content */}
-        <View className="flex-1 p-5">
+    <>
+      <Stack.Screen 
+        options={{
+          title,
+          headerStyle: {
+            backgroundColor: '#fff',
+          },
+          headerTintColor: '#333',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+          headerRight: () => (
+            <View className="bg-gray-100 px-3 py-2 rounded-full border border-gray-200 mr-4">
+              <Text 
+                className="text-sm font-medium text-gray-700"
+                onPress={onToggleViewMode}
+              >
+                {viewMode === 'chart' ? '📊 List' : '📈 Chart'}
+              </Text>
+            </View>
+          ),
+        }} 
+      />
+      
+      <ScrollView className="flex-1 bg-gray-50">
+        <View className="p-5">
           {/* Summary Card */}
           <View className={`rounded-xl p-4 mb-4 shadow-sm ${isIncome ? 'bg-green-50' : 'bg-red-50'}`}>
             <Text className={`text-sm font-medium ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
@@ -109,6 +108,7 @@ const CategoryBreakdownModal = ({
                   );
                 }}
                 showsVerticalScrollIndicator={false}
+                scrollEnabled={false}
                 ListFooterComponent={() => (
                   <View className="flex-row justify-between items-center pt-4 mt-3 border-t-2 border-gray-200">
                     <Text className="text-lg font-bold text-gray-800">{totalLabel}</Text>
@@ -128,9 +128,9 @@ const CategoryBreakdownModal = ({
             colorClass={colorClass}
           />
         </View>
-      </View>
-    </Modal>
+      </ScrollView>
+    </>
   );
 };
 
-export default CategoryBreakdownModal;
+export default CategoryBreakdownScreen;
